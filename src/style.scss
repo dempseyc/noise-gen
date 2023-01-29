@@ -1,0 +1,152 @@
+
+$background: #d7c1a0;
+$shadow: #6b522d;
+$highlight: #fee0b2;
+
+body {
+  background: $background;
+  width: 100vw;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  color: $shadow;
+}
+
+$track-w: 200px;
+$track-h: 50px;
+$thumb-d: calc($track-h * 0.8);
+$border-radius: calc($track-h/2);
+
+@mixin track() {
+  box-sizing: border-box;
+  width: $track-w; height: $track-h;
+  // edit here
+  background: transparent;
+  border: none;
+  border-radius: $border-radius;
+  box-shadow: 
+    inset 0px 0px 2px 2px $background, 
+    inset 0px -3px 5px 0px $highlight, 
+    inset 0px 3px 5px 0px $shadow;
+}
+
+@mixin thumb() {
+  box-sizing: border-box;
+  width: $thumb-d; height: $thumb-d;
+  // edit here
+  background: $background;
+  border: none;
+  border-radius: $border-radius;
+  box-shadow: 
+  inset 0px 0px 2px 2px $background, 
+  inset 0px 3px 5px 0px $highlight, 
+  inset 0px -3px 5px 0px $shadow,
+}
+
+@mixin trackVertical() {
+  box-shadow: 
+    inset 0px 0px 2px 2px $background, 
+    inset 3px 0px 5px 0px $highlight, 
+    inset -3px 0px 5px 0px $shadow;
+}
+
+@mixin thumbVertical() {
+  box-shadow: 
+    inset 0px 0px 2px 2px $background, 
+    inset -3px 0px 5px 0px $highlight, 
+    inset 3px 0px 5px 0px $shadow;
+}
+
+.wrap {
+  margin: 10px;
+  position: relative;
+  height: $track-h;
+  width: $track-w;
+  cursor: pointer;
+  
+}
+
+.wrap-vertical {
+  height: $track-w;
+  width: $track-h;
+}
+
+[type='range'] {
+  &, &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+  }
+  margin: 0;
+  padding: 0;
+  width: $track-w; height: $track-h;
+  // edit here
+  background: transparent;
+  
+  &::-webkit-slider-runnable-track {
+    @include track
+  }
+  &::-moz-range-track { @include track }
+  &::-ms-track { @include track }
+  
+  &::-webkit-slider-thumb {
+    margin-top: .5*($track-h - $thumb-d); // edit?
+    @include thumb
+  }
+  &::-moz-range-thumb { @include thumb }
+  &::-ms-thumb {
+    margin-top: 0; // edit?
+    @include thumb
+  }
+  
+  &::-ms-tooltip { display: none }
+
+}
+.vertical {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: 
+    translate(-50%, -50%) 
+    rotate(-90deg);
+  &::-webkit-slider-runnable-track {
+    @include trackVertical()
+  }
+  &::-moz-range-track { @include trackVertical() }
+  &::-ms-track { @include trackVertical() }
+  
+  &::-webkit-slider-thumb {
+    margin-top: .5*($track-h - $thumb-d); // edit?
+    @include thumbVertical()
+  }
+  &::-moz-range-thumb { @include thumbVertical() }
+  &::-ms-thumb {
+    margin-top: 0; // edit?
+    @include thumbVertical()
+  }
+}
+
+.flex {
+  display: flex;
+}
+.flex-col {
+  flex-direction: column;
+}
+.flex-row {
+  flex-direction: row;
+}
+.inline-flex {
+  display: inline-flex;
+}
+.w-full {
+  width: 100%;
+}
+.max-w-lg {
+  max-width: 32rem;
+}
+.items-center {
+  align-items: center;
+}
+.text-center {
+  text-align: center;
+}
+
+
+input:focus {
+  outline: none;
+}
