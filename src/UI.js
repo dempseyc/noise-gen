@@ -2,23 +2,28 @@ export const UI = {
   main: {
     volume: {
       level: 0.0,
-      input: document.querySelector("#volume")
+      input: document.querySelector("#volume"),
+      setter: ()=>{},
     },
     wall: {
       level: 0.5,
-      input: document.querySelector("#wall")
+      input: document.querySelector("#wall"),
+      setter: ()=>{},
     },
     wave: {
       level: 0.5,
-      input: document.querySelector("#wave")
+      input: document.querySelector("#wave"),
+      setter: ()=>{},
     },
     rain: {
       level: 0.0,
-      input: document.querySelector("#rain")
+      input: document.querySelector("#rain"),
+      setter: ()=>{},
     },
     hush: {
       level: 0.0,
-      input: document.querySelector("#hush")
+      input: document.querySelector("#hush"),
+      setter: ()=>{},
     },
   },
   details: {
@@ -29,6 +34,7 @@ export const UI = {
         filter: {
           level: 0.9,
           input: document.querySelector("#wall-filter"),
+          setter: ()=>{},
         }
       }
     },
@@ -39,6 +45,7 @@ export const UI = {
         speed: {
           level: 0.3,
           input: document.querySelector("#wave-speed"),
+          setter: ()=>{},
         }
       }
     },
@@ -49,6 +56,7 @@ export const UI = {
         amount: {
           level: 0.5,
           input: document.querySelector("#rain-amount"),
+          setter: ()=>{},
         }
       }
     },
@@ -59,6 +67,7 @@ export const UI = {
         gibber: {
           level: 0.0,
           input: document.querySelector("#hush-gibber"),
+          setter: ()=>{},
         }
       }
     },
@@ -69,7 +78,11 @@ for (let sound in UI.main) {
   const soundUI = UI.main[sound];
   // console.log(soundUI.input);
   soundUI.input.value = soundUI.level;
-  soundUI.input.addEventListener("input", (e) => soundUI.level = parseInt(e.target.value, 10));
+  soundUI.input.addEventListener("input", (e) => {
+    const level = e.target.value;
+    soundUI.level = level;
+    soundUI.setter(level)
+  });
 }
 
 for (let sound in UI.details) {
@@ -77,6 +90,10 @@ for (let sound in UI.details) {
     const paramUI = UI.details[sound].UI[param];
     // console.log(paramUI);
     paramUI.input.value = paramUI.level;
-    paramUI.input.addEventListener("input", (e) => paramUI.level = parseInt(e.target.value, 10));
+    paramUI.input.addEventListener("input", (e) => {
+      const level = e.target.value;
+      paramUI.level = level;
+      paramUI.setter(level);
+    });
   }
 }

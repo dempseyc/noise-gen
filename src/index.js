@@ -8,9 +8,7 @@ import { UI } from "./UI.js";
 const cl = console.log;
 const aC = new AudioContext();
 const speaker = aC.destination;
-
-const NUM_SECS = 1;
-const S_R = 44100;
+let started = false;
 
 const TRFM = {
   per1: (n) => 0.001 + n,
@@ -19,7 +17,22 @@ const TRFM = {
   negToHz: (n) => 10000 * (0.501 - n),
 };
 
-UI.main.volume.input.addEventListener("mousedown", () => startSound());
+function setParam(param, value) {
+  param.setTargetAtTime(value, 0, 0);
+}
+
+const mainGain = new GainNode(aC, { gain: UI.main.volume.level });
+UI.main.volume.setter = (level) => setParam(mainGain.gain, level);
+const wallGain = new GainNode(aC, { gain: UI.main.wall.level });
+UI.main.wall.setter = (level) => setParam(wallGain.gain, level);
+const waveGain = new GainNode(aC, { gain: UI.main.wave.level });
+UI.main.wave.setter = (level) => setParam(waveGain.gain, level);
+const rainGain = new GainNode(aC, { gain: UI.main.rain.level });
+UI.main.rain.setter = (level) => setParam(rainGain.gain, level);
+const hushGain = new GainNode(aC, { gain: UI.main.hush.level });
+UI.main.hush.setter = (level) => setParam(hushGain.gain, level);
+
+const hushGibberGain = new GainNode(aC);
 
 function whiteNoise(arr, level) {
   for (let i = 0, l = arr.length; i < l; i++) {
@@ -36,6 +49,11 @@ function mergeAll(outs) {
   return merger;
 }
 
+function startSound(startList) {
+  for (let i = 0; i < startList.length; i++) {
+    startList[i].start();
+  }
+}
 // i8 = eighthInterval;
 // for pad 0, range is 0 to 2 * i8
 // for pad 0.5, range is 0.5 * i8 to 2 * i8
@@ -121,22 +139,29 @@ function blobRandom(params, scalers, options = {}) {
   return this;
 }
 
-const startList = [];
+function noiseOsc (context) {
+  const NUM_SECS = 1;
+  const S_R = 44100;
+  const buffer = new AudioBuffer({
+    length: NUM_SECS * S_R,
+    sampleRate: S_R,
+  });
+  whiteNoise(buffer.getChannelData(0), 1);
+  const noiseNode = new AudioBufferSourceNode(context, {
+    buffer: buffer,
+    loop: true,
+  });
+  return noiseNode;
+}
 
-// ^^ end setup ^^
-
-function makeOcean(numLayers = 1) {
+// ^^ end sound setup ^^
+// vv sound designs vv
+function makeWave(numLayers = 1) {
   const layers = [];
+  const startList = [];
   for (let i = 0; i < numLayers; i++) {
-    const buffer = new AudioBuffer({
-      length: NUM_SECS * S_R,
-      sampleRate: S_R,
-    });
-    whiteNoise(buffer.getChannelData(0), 0.5);
-    const noiseNode = new AudioBufferSourceNode(aC, {
-      buffer: buffer,
-      loop: true,
-    });
+    const noiseNode = noiseOsc(aC);
+    startList.push(noiseNode);
     const filterLFO = new BiquadFilterNode(aC, {
       type: "bandpass",
       frequency: 60,
@@ -147,6 +172,7 @@ function makeOcean(numLayers = 1) {
       maxVal: 4000,
       pad: 0.5,
     });
+    startList.push(lfo0);
     const guideLFO = new GainNode(aC);
     const lfo1 = new slowRandom([guideLFO.gain], [TRFM.per1], {
       f: 20,
@@ -154,68 +180,25 @@ function makeOcean(numLayers = 1) {
       maxVal: 0.8,
       pad: 1,
     });
+    startList.push(lfo1);
     const outLFO = new GainNode(aC);
-    const lfoBlob1 = new slowRandom([outLFO.gain], [TRFM.per1], {
+    const lfo2 = new slowRandom([outLFO.gain], [TRFM.per1], {
       f: 10,
       minVal: 0.4,
       maxVal: 0.6,
       pad: 1,
     });
+    startList.push(lfo2);
     noiseNode.connect(filterLFO).connect(guideLFO).connect(outLFO);
-    startList.push(noiseNode, lfo0, lfo1, lfoBlob1);
     layers[i] = outLFO;
   }
   const merger = mergeAll(layers);
-  return merger;
+  return [merger.connect(waveGain), startList];
 }
 
-function makeWhisper(numLayers = 1) {
+function makeHush(numLayers = 1) {
   const layers = [];
-  for (let i = 0; i < numLayers; i++) {
-    const buffer = new AudioBuffer({
-      length: NUM_SECS * S_R,
-      sampleRate: S_R,
-    });
-    whiteNoise(buffer.getChannelData(0), 0.5);
-    const noiseNode = new AudioBufferSourceNode(aC, {
-      buffer: buffer,
-      loop: true,
-    });
-    const filterLFO = new BiquadFilterNode(aC, {
-      type: "bandpass",
-      frequency: 8000,
-      Q: 0.7,
-    });
-    const lfo0 = new slowRandom([filterLFO.frequency], [TRFM.toHz], {
-      f: 0.5,
-      minVal: -0.4, //clamps
-      maxVal: 0.8,
-      pad: 1,
-    });
-    const guideLFO = new GainNode(aC);
-    const lfo1 = new slowRandom([guideLFO.gain], [TRFM.per1], {
-      f: 0.5,
-      minVal: 0,
-      maxVal: 0.8,
-      pad: 0.5,
-    });
-    const outLFO = new GainNode(aC);
-    const lfoBlob1 = new slowRandom([outLFO.gain], [TRFM.per1], {
-      f: 0.5,
-      minVal: 0,
-      maxVal: 0.8,
-      pad: 0.5,
-    });
-    noiseNode.connect(filterLFO).connect(guideLFO).connect(outLFO);
-    startList.push(noiseNode, lfo0, lfo1, lfoBlob1);
-    layers[i] = outLFO;
-  }
-  const merger = mergeAll(layers);
-  return merger;
-}
-
-function makeGibber(numLayers = 1) {
-  const layers = [];
+  const startList = [];
   for (let i = 0; i < numLayers; i++) {
     // formant osc
     const aahF = Math.random() * (250 - 150) + 150;
@@ -225,19 +208,13 @@ function makeGibber(numLayers = 1) {
     aahNode2.frequency.value = aahF * 0.5;
     const aahNode3 = oscillators.eeh(aC);
     aahNode3.frequency.value = aahF * 2;
+    startList.push(aahNode1, aahNode2, aahNode3);
     const aahMerge = mergeAll([aahNode1, aahNode2, aahNode3]);
     const aahGain = new GainNode(aC);
     aahMerge.connect(aahGain);
-    // noise osc
-    const buffer = new AudioBuffer({
-      length: NUM_SECS * S_R,
-      sampleRate: S_R,
-    });
-    whiteNoise(buffer.getChannelData(0), 0.5);
-    const noiseNode = new AudioBufferSourceNode(aC, {
-      buffer: buffer,
-      loop: true,
-    });
+
+    const noiseNode = noiseOsc(aC);
+    startList.push(noiseNode);
     const noiseGain = new GainNode(aC);
     noiseNode.connect(noiseGain);
     const voxMerge = mergeAll([aahGain, noiseGain]);
@@ -252,6 +229,7 @@ function makeGibber(numLayers = 1) {
         pad: 0.5,
       }
     );
+    startList.push(lfoBlob1);
 
     const lfoBlob2 = new blobRandom(
       [aahGain.gain, noiseGain.gain],
@@ -263,6 +241,7 @@ function makeGibber(numLayers = 1) {
         pad: 0.5,
       }
     );
+    startList.push(lfoBlob2);
 
     const lfoDetune = new slowRandom([aahNode1.detune, aahNode2.detune, aahNode3.detune],[TRFM.per1,TRFM.per1,TRFM.per1], {
       f: 9,
@@ -270,6 +249,7 @@ function makeGibber(numLayers = 1) {
       maxVal: 200,
       pad: 0,
     })
+    startList.push(lfoDetune);
 
     const lfo0filter = new BiquadFilterNode(aC, {
       type: "bandpass",
@@ -283,6 +263,8 @@ function makeGibber(numLayers = 1) {
       maxVal: 0.7,
       pad: 0.5,
     });
+    startList.push(lfo0);
+
     const lfo1gain = new GainNode(aC);
     const lfo1 = new blobRandom([lfo1gain.gain], [TRFM.per1], {
       f: 1,
@@ -290,38 +272,29 @@ function makeGibber(numLayers = 1) {
       maxVal: 0.6,
       pad: 0,
     });
+    startList.push(lfo1);
 
     voxMerge
      .connect(lfo0filter)
      .connect(lfo1gain);
-    startList.push(
-      aahNode1,
-      aahNode2,
-      aahNode3,
-      noiseNode,
-      lfo0,
-      lfo1,
-      lfoBlob1,
-      lfoBlob2,
-      lfoDetune
-    );
+    
     layers[i] = lfo1gain;
   }
   const merger = mergeAll(layers);
-  return merger;
+  return [merger.connect(hushGain), startList];
 }
 
-const aah = makeGibber(8);
-aah.connect(speaker);
+const [waveNode, waveStartList] = makeWave(2);
+const [hushNode, hushStartList] = makeHush(3);
 
-// const whisper = makeWhisper(1);
-// whisper.connect(speaker);
+const mix = mergeAll([waveNode,hushNode]);
 
-// const ocean = makeOcean(2);
-// ocean.connect(speaker);
+mix.connect(mainGain).connect(speaker);
 
-function startSound() {
-  for (let i = 0; i < startList.length; i++) {
-    startList[i].start();
+UI.main.volume.input.addEventListener("mousedown", () => {
+  if (!started) {
+    startSound(waveStartList);
+    startSound(hushStartList);
+    started = true;
   }
-}
+});
