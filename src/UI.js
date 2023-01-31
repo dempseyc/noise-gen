@@ -6,17 +6,18 @@ export const UI = {
       setter: ()=>{},
     },
     wall: {
-      level: 0.5,
+      // level: 0.5, // default
+      level: 0.0,
       input: document.querySelector("#wall"),
       setter: ()=>{},
     },
     wave: {
-      level: 0.5,
+      level: 0.0,
       input: document.querySelector("#wave"),
       setter: ()=>{},
     },
     rain: {
-      level: 0.0,
+      level: 0.5,
       input: document.querySelector("#rain"),
       setter: ()=>{},
     },
@@ -54,7 +55,7 @@ export const UI = {
       component: document.querySelector("#rain-details"),
       UI: {
         amount: {
-          level: 0.5,
+          level: 0.2,
           input: document.querySelector("#rain-amount"),
           setter: ()=>{},
         }
@@ -65,7 +66,7 @@ export const UI = {
       component: document.querySelector("#hush-details"),
       UI: {
         gibber: {
-          level: 0.0,
+          level: 0,
           input: document.querySelector("#hush-gibber"),
           setter: ()=>{},
         }
