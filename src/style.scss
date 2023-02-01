@@ -13,20 +13,23 @@ body {
 
 $track-w: 240px;
 $track-h: 60px;
-$thumb-d: calc($track-h * 0.8);
+$thumb-d: $track-h;
+// $thumb-d: calc($track-h * 0.8);
 $border-radius: calc($track-h/2);
 
 @mixin track() {
   box-sizing: border-box;
   width: $track-w; height: $track-h;
   // edit here
-  background: transparent;
+  // background: transparent;
   border: none;
   border-radius: $border-radius;
-  box-shadow: 
-    inset 0px 0px 2px 2px $background, 
-    inset 0px -3px 5px 0px $highlight, 
-    inset 0px 3px 5px 0px $shadow;
+  // box-shadow: 
+  //   inset 0px 0px 2px 2px $background, 
+  //   inset 0px -3px 5px 0px $highlight, 
+  //   inset 0px 3px 5px 0px $shadow;
+  // other way
+  // background-color: #6b522d;
 }
 
 @mixin thumb() {
@@ -39,14 +42,15 @@ $border-radius: calc($track-h/2);
   box-shadow: 
   inset 0px 0px 2px 2px $background, 
   inset 0px 3px 5px 0px $highlight, 
-  inset 0px -3px 5px 0px $shadow,
+  inset 0px -3px 5px 0px $shadow;
 }
 
 @mixin trackVertical() {
-  box-shadow: 
-    inset 0px 0px 2px 2px $background, 
-    inset 3px 0px 5px 0px $highlight, 
-    inset -3px 0px 5px 0px $shadow;
+      color: white;
+//   box-shadow: 
+//     inset 0px 0px 2px 2px $background, 
+//     inset 3px 0px 5px 0px $highlight, 
+//     inset -3px 0px 5px 0px $shadow;
 }
 
 @mixin thumbVertical() {
@@ -62,12 +66,23 @@ $border-radius: calc($track-h/2);
   height: $track-h;
   width: $track-w;
   cursor: pointer;
-  
+  // here
+  background: $background;
+  border: none;
+  border-radius: $border-radius;
+  box-shadow: 
+    inset 0px 0px 2px 2px $background, 
+    inset 0px -3px 5px 0px $highlight, 
+    inset 0px 3px 5px 0px $shadow;
 }
 
 .wrap-vertical {
   height: $track-w;
   width: $track-h;
+  box-shadow: 
+    inset 0px 0px 2px 2px $background, 
+    inset 3px 0px 5px 0px $highlight, 
+    inset -3px 0px 5px 0px $shadow;
 }
 
 [type='range'] {
@@ -106,19 +121,19 @@ $border-radius: calc($track-h/2);
     translate(-50%, -50%) 
     rotate(-90deg);
   &::-webkit-slider-runnable-track {
-    @include trackVertical()
+    @include trackVertical
   }
-  &::-moz-range-track { @include trackVertical() }
-  &::-ms-track { @include trackVertical() }
+  &::-moz-range-track { @include trackVertical }
+  &::-ms-track { @include trackVertical }
   
   &::-webkit-slider-thumb {
     margin-top: .5*($track-h - $thumb-d); // edit?
-    @include thumbVertical()
+    @include thumbVertical
   }
-  &::-moz-range-thumb { @include thumbVertical() }
+  &::-moz-range-thumb { @include thumbVertical }
   &::-ms-thumb {
     margin-top: 0; // edit?
-    @include thumbVertical()
+    @include thumbVertical
   }
 }
 
@@ -150,4 +165,115 @@ $border-radius: calc($track-h/2);
 
 input:focus {
   outline: none;
+}
+
+$innerWidth: calc(100% - $thumb-d);
+
+@mixin indicator() {
+  background-color: #6b522d;
+  display: inline;
+  position: absolute;
+}
+
+$volumeWidth: calc(var(--volumeIndicator, 0) * $track-h * 0.5);
+#volume-indicator {
+  height: $volumeWidth;
+  width: $volumeWidth;
+  border-radius: calc($volumeWidth * 0.5);
+  top: calc(($track-h / 2) - ($volumeWidth * 0.5));
+  left: calc($innerWidth * var(--volumeIndicator, 0) + ($track-h / 2) - ($volumeWidth * 0.5));
+  @include indicator
+}
+
+$wallWidth: calc(var(--wallIndicator, 0) * $track-h * 0.5);
+#wall-indicator {
+  height: $wallWidth;
+  width: $wallWidth;
+  border-radius: calc($wallWidth * 0.5);
+  left: calc(($track-h / 2) - ($wallWidth * 0.5));
+  bottom: calc($innerWidth * var(--wallIndicator, 0) + ($track-h / 2) - ($wallWidth * 0.5));
+  @include indicator
+}
+
+$waveWidth: calc(var(--waveIndicator, 0) * $track-h * 0.5);
+#wave-indicator {
+  height: $waveWidth;
+  width: $waveWidth;
+  border-radius: calc($waveWidth * 0.5);
+  left: calc(($track-h / 2) - ($waveWidth * 0.5));
+  bottom: calc($innerWidth * var(--waveIndicator, 0) + ($track-h / 2) - ($waveWidth * 0.5));
+  @include indicator
+}
+
+$rainWidth: calc(var(--rainIndicator, 0) * $track-h * 0.5);
+#rain-indicator {
+  height: $rainWidth;
+  width: $rainWidth;
+  border-radius: calc($rainWidth * 0.5);
+  left: calc(($track-h / 2) - ($rainWidth * 0.5));
+  bottom: calc($innerWidth * var(--rainIndicator, 0) + ($track-h / 2) - ($rainWidth * 0.5));
+  @include indicator
+}
+
+$hushWidth: calc(var(--hushIndicator, 0) * $track-h * 0.5);
+#hush-indicator {
+  height: $hushWidth;
+  width: $hushWidth;
+  border-radius: calc($hushWidth * 0.5);
+  left: calc(($track-h / 2) - ($hushWidth * 0.5));
+  bottom: calc($innerWidth * var(--hushIndicator, 0) + ($track-h / 2) - ($hushWidth * 0.5));
+  @include indicator
+}
+
+////
+/// 
+/// 
+$volumeWidth: calc(var(--volumeIndicator, 0) * $track-h * 0.5);
+#volume-indicator {
+  height: $volumeWidth;
+  width: $volumeWidth;
+  border-radius: calc($volumeWidth * 0.5);
+  top: calc(($track-h / 2) - ($volumeWidth * 0.5));
+  left: calc($innerWidth * var(--volumeIndicator, 0) + ($track-h / 2) - ($volumeWidth * 0.5));
+  @include indicator
+}
+
+$filterWidth: calc(var(--filterIndicator, 0) * $track-h * 0.5);
+#filter-indicator {
+  height: $filterWidth;
+  width: $filterWidth;
+  border-radius: calc($filterWidth * 0.5);
+  top: calc(($track-h / 2) - ($filterWidth * 0.5));
+  left: calc($innerWidth * var(--filterIndicator, 0) + ($track-h / 2) - ($filterWidth * 0.5));
+  @include indicator
+}
+
+$speedWidth: calc(var(--speedIndicator, 0) * $track-h * 0.5);
+#speed-indicator {
+  height: $speedWidth;
+  width: $speedWidth;
+  border-radius: calc($speedWidth * 0.5);
+  top: calc(($track-h / 2) - ($speedWidth * 0.5));
+  left: calc($innerWidth * var(--speedIndicator, 0) + ($track-h / 2) - ($speedWidth * 0.5));
+  @include indicator
+}
+
+$amountWidth: calc(var(--amountIndicator, 0) * $track-h * 0.5);
+#amount-indicator {
+  height: $amountWidth;
+  width: $amountWidth;
+  border-radius: calc($amountWidth * 0.5);
+  top: calc(($track-h / 2) - ($amountWidth * 0.5));
+  left: calc($innerWidth * var(--amountIndicator, 0) + ($track-h / 2) - ($amountWidth * 0.5));
+  @include indicator
+}
+
+$gibberWidth: calc(var(--gibberIndicator, 0) * $track-h * 0.5);
+#gibber-indicator {
+  height: $gibberWidth;
+  width: $gibberWidth;
+  border-radius: calc($gibberWidth * 0.5);
+  top: calc(($track-h / 2) - ($gibberWidth * 0.5));
+  left: calc($innerWidth * var(--gibberIndicator, 0) + ($track-h / 2) - ($gibberWidth * 0.5));
+  @include indicator
 }

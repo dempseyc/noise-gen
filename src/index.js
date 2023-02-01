@@ -17,15 +17,17 @@ function float2P (float) {
 
 const TRFM = {
   per1: (n) => 0.001 + n,
+  per2: (n) => 0.001 + n * n, // fall off exp 0 to 1
   negPer1: (n) => 1.001 - n,
   toHz: (n) => 10000 * (0.001 + n),
+  toHz2k: (n) => (10000 * (0.001 + n)),
   negToHz: (n) => 10000 * (1.001 - n),
   per1tenth: (n) => 10 * (0.001 + n),
   negPer1tenth: (n) => 10 * (1.001 - n),
 };
 
 function setParam(param, value) {
-  param.exponentialRampToValueAtTime(float2P(value), 0, 0);
+  param.exponentialRampToValueAtTime(TRFM.per1(float2P(value)), 0, 0);
 }
 
 const mainGain = new GainNode(aC, { gain: UI.main.volume.level });
@@ -92,7 +94,6 @@ function slowRandom(params, scalers, options = {}) {
   this.on = false;
   this.i2 = 1 / TRFM.per1tenth(parseFloat(options.frequency));
   this.setFrequency = (newF) => {
-    cl(this);
     params.forEach((param) => param.cancelScheduledValues(0));
     this.i2 = 1 / TRFM.per1tenth(parseFloat(newF));
   };
@@ -183,7 +184,6 @@ function grainRandom(params, scalers, options = {}) {
     this.i2 = 0.25 / TRFM.per1tenth(parseFloat(newF));
   };
   this.start = () => {
-    cl("grain start");
     this.on = true;
     this.reset(options.val, options.val, 0, this.i2);
   };
@@ -193,10 +193,10 @@ function grainRandom(params, scalers, options = {}) {
         const time = aC.currentTime;
         params.forEach((param, i) => {
           param.cancelScheduledValues(0);
-          param.linearRampToValueAtTime(scalers[i](curr), time + 0.003); //immediate
+          param.linearRampToValueAtTime(scalers[i](curr), time); //immediate
           param.linearRampToValueAtTime(
             0.0001, //zero-ish
-            grainLength + time + 0.003, // add latency
+            grainLength + time, // add latency
           );
         });
         const next =
@@ -205,7 +205,7 @@ function grainRandom(params, scalers, options = {}) {
           Math.random() * (this.i2 * 2 - this.i2 * options.pad) +
           this.i2 * options.pad;
         this.reset(curr, next, currInt, nextInt);
-      }, (currInt + grainLength + 0.005) * 1000);
+      }, (currInt + grainLength) * 1000);
     }
   };
   this.stop = () => {
@@ -296,7 +296,7 @@ function makeRain(numLayers = 1) {
     });
     const gainLFO = new GainNode(aC);
     let rainAmount = UI.details.rainSound.UI.amount.level;
-    const lfo = new grainRandom([filterLFO.frequency, gainLFO.gain], [TRFM.toHz, TRFM.per1], {
+    const lfo = new grainRandom([filterLFO.frequency, gainLFO.gain], [TRFM.toHz2k, TRFM.per2], {
       frequency: rainAmount,
       minVal: 0.4,
       maxVal: 2,
